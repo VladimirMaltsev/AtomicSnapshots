@@ -1,83 +1,99 @@
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Channels;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TheBoundedSingleWriterAlgorithm
 {
     class RegisterManager
     {
-        private ArrayList registers;
-        private bool[,] q_hshakes;
+        private Register[] registers;
+        private readonly bool[,] q_hshakes;
 
-        public RegisterManager (ArrayList regs)
+        public RegisterManager (Register[] regs)
         {
             this.registers = regs;
-            this.q_hshakes = new bool[registers.Count, registers.Count];
+            this.q_hshakes = new bool[registers.Length, registers.Length];
         }
 
-        public int[] Scan()
+        public int[] Scan(int ind)
         {
-            var moved = new bool[registers.Count];
-            
+            Console.WriteLine("Scan {0}", Task.CurrentId);
+            var moved = new bool[registers.Length];
+
             while (true)
             {
-                for (var i = 0; i < registers.Count - 1; i++)
-                    for (var j = 0; j < registers.Count - 1; j ++)
+              
+                for (var j = 0; j < registers.Length - 1; j++)
+                {
+                    q_hshakes[ind, j] = ((Register) registers[j]).getBitmask()[ind];
+                }
+                    
+                
+                var a = CollectRegisters();
+                var b = CollectRegisters();
+               // printRegs(a);
+               // printRegs(b);
+
+                var result_ok = true;
+                for (var k = 0; k < a.Length; k++)
+                {
+                    if (a[k].getBitmask()[ind] == b[k].getBitmask()[ind] == q_hshakes[ind, k] &&
+                        a[k].getToggle() == a[k].getToggle()) continue;
+                    result_ok = false;
+                    break; 
+                }
+
+                if (result_ok)
+                {
+                    Console.WriteLine("Result ok");
+                    var view = new int[registers.Length];
+                    for (var ii = 0; ii < registers.Length; ii++)
+                        view[ii] =  a[ii].getData();
+                    Console.WriteLine(view[0]);
+                    return view;
+                }
+
+                for (var k = 0; k < a.Length; k++)
+                {
+                    if (a[k].getBitmask()[ind] ==  b[k].getBitmask()[ind] &&
+                        b[k].getBitmask()[ind] == q_hshakes[ind, k] &&
+                        a[k].getToggle() ==  b[k].getToggle()) continue;
+                    if (moved[k])
                     {
-                        q_hshakes[i, j] = ((Register)registers[j]).getBitmask()[i];
-                        var a = CollectRegisters();
-                        var b = CollectRegisters();
-
-                        var result_ok = true;
-                        for (var k = 0; k < a.Count; k ++)
-                        {
-                            foreach (var t in a)
-                            {
-                                if (((Register)a[k]).getBitmask()[i] == ((Register)b[k]).getBitmask()[i] == q_hshakes[j, i] &&
-                                    ((Register)a[k]).getToggle() == ((Register)a[k]).getToggle()) continue;
-                                result_ok = false;
-                                break;
-                            }
-                            if (!result_ok)
-                                break;
-                        }
-
-                        if (result_ok)
-                        {
-                            var view = new int[registers.Count];
-                            for (var ii = 0; ii < registers.Count; ii++)
-                                view[ii] = ((Register) a[ii]).getData();
-                            return view;
-                        }
-
-                        for (var k = 0; k < a.Count; k++)
-                        {
-                            foreach (var t in a)
-                            {
-                                if (((Register)a[k]).getBitmask()[i] == ((Register)b[k]).getBitmask()[i] &&
-                                    ((Register)b[k]).getBitmask()[i] == q_hshakes[j, i] &&
-                                    ((Register)a[k]).getToggle() == ((Register)b[k]).getToggle()) continue;
-                                if (moved[k])
-                                    return ((Register)b[k]).getView();
-                                moved[k] = true;
-                            }
-                        }
+                        return b[k].getView();
                     }
+                    moved[k] = true;   
+                    
+                }
             }
         }
 
-        public void update(int i, int value)
+        public void Update(int i, int value)
         {
-            var newBitmask = new bool[registers.Count];
-            for (var j = 0; j < registers.Count; j ++)
+            Console.WriteLine("Update {0}", Task.CurrentId);
+            var newBitmask = new bool[registers.Length];
+            for (var j = 0; j < registers.Length; j ++)
                 newBitmask[j] = !q_hshakes[j, i];
-            var view = Scan();
+            var view = Scan(i);
             ((Register)this.registers[i]).AtomicUpdate(value, newBitmask, 
                                                         !((Register)this.registers[i]).getToggle(), view);
         }
 
-        private ArrayList CollectRegisters()
+        private Register[] CollectRegisters()
         {
-            return (ArrayList) registers.Clone();
+            return (Register[]) registers.Clone();
+        }
+
+        private void printRegs(Register[] regs)
+        {
+            foreach(Register r in regs)
+            {
+                Console.Write("{0} ", r.getData());
+            }
+            Console.WriteLine();
         }
     }
 

@@ -4,8 +4,11 @@ using System.Runtime.Remoting.Messaging;
 
 namespace TheBoundedSingleWriterAlgorithm
 {
+         
     internal class Register
     {
+        static Object updLock = new Object();
+        
         private int data;
         private bool[] bitmask;
         private bool toggle;
@@ -44,7 +47,7 @@ namespace TheBoundedSingleWriterAlgorithm
 
     public void AtomicUpdate(int newData, bool[] newBitmask, bool newToggle, int[] snapshot)
         {
-            Object updLock = new Object();
+            
             lock (updLock)
             {
                 this.bitmask = newBitmask;
