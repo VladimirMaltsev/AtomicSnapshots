@@ -1,32 +1,30 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TheBoundedSingleWriterAlgorithm
 {
-    class Register
+    internal class Register
     {
         int data;
-        int[] bitmask;
-        bool togle;
+        bool[] bitmask;
+        bool toggle;
         int[] view;
+
+        public Register() { }
 
         public Register(int data, int n) 
         {
             this.data = data;
-            bitmask = new int[n];
+            bitmask = new bool[n];
             view = new int[n];
         }
 
-        public void AtomicUpdate(int newData, int[] newBitmask, bool newTogle, int[] snapshot)
+        public void AtomicUpdate(int newData, bool[] newBitmask, bool newToggle, int[] snapshot)
         {
             Object updLock = new Object();
             lock (updLock)
             {
                 this.bitmask = newBitmask;
-                this.togle = newTogle;
+                this.toggle = newToggle;
                 this.view = snapshot;
                 this.data = newData;
             }

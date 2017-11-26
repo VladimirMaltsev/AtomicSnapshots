@@ -6,15 +6,17 @@ namespace TheBoundedSingleWriterAlgorithm
     class RegisterManager
     {
         private ArrayList<Register> registers;
+        private bool[,] q_hshakes;
 
         public RegisterManager (ArrayList<Register> regs)
         {
             this.registers = regs;
+            this.q_hshakes = new bool[registers.Count, registers.Count];
         }
 
         public int[] Scan()
         {
-            int[ , ] q_hshakes = new int[registers.Count, registers.Count];
+            
             bool[] moved = new bool[registers.Count];
             
             while (true)
@@ -60,12 +62,21 @@ namespace TheBoundedSingleWriterAlgorithm
                                 {
                                     if (moved[k])
                                         return b.Item[k].view;
-                                    moded[k] = true;
+                                    moved[k] = true;
                                 }
                             }
                         }
                     }
             }
+        }
+
+        public void update(int i, int value)
+        {
+            bool[] newBitmask = new bool[registers.Count];
+            for (int j = 0; j < registers.Count; j ++)
+                newBitmask[j] = !q[j, i];
+            int view = Scan();
+            (Register)this.registers[i].AtomicUpdate(value, newBitmask, !(Register)this.registers[i].toggle, view);
         }
 
         private ArrayList<Register> CollectRegister()
