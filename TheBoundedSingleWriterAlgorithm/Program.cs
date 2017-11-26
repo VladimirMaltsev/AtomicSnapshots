@@ -2,17 +2,16 @@
 
 namespace TheBoundedSingleWriterAlgorithm
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            int n = 2;
-            ArrayList registers = new ArrayList();
+            const int n = 2;
+            var registers = new ArrayList();
 
-            for (int i = 0; i < n; i ++)
+            for (var i = 0; i < n; i ++)
             {
-                Register r = new Register();
-
+                var r = new Register(0, n);
             }
         }
     }

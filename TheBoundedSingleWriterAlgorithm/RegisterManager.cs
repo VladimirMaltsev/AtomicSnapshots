@@ -5,10 +5,10 @@ namespace TheBoundedSingleWriterAlgorithm
 {
     class RegisterManager
     {
-        private ArrayList<Register> registers;
+        private ArrayList registers;
         private bool[,] q_hshakes;
 
-        public RegisterManager (ArrayList<Register> regs)
+        public RegisterManager (ArrayList regs)
         {
             this.registers = regs;
             this.q_hshakes = new bool[registers.Count, registers.Count];
@@ -16,29 +16,26 @@ namespace TheBoundedSingleWriterAlgorithm
 
         public int[] Scan()
         {
-            
-            bool[] moved = new bool[registers.Count];
+            var moved = new bool[registers.Count];
             
             while (true)
             {
-                for (i = 0; i < registers.Count - 1; i++)
-                    for ( j = 0; j < registers.Count - 1; j ++)
+                for (var i = 0; i < registers.Count - 1; i++)
+                    for (var j = 0; j < registers.Count - 1; j ++)
                     {
-                        q_hshakes[i, j] = registers.Item[j].bitmask[i];
-                        ArryaList<Register> a = CollectRegisters();
-                        ArrayList<Register> b = CollectRegisters();
+                        q_hshakes[i, j] = ((Register)registers[j]).getBitmask()[i];
+                        var a = CollectRegisters();
+                        var b = CollectRegisters();
 
-                        bool result_ok = true;
-                        for (int k = 0; k < a.Count; k ++)
+                        var result_ok = true;
+                        for (var k = 0; k < a.Count; k ++)
                         {
-                            for (int ind = 0; ind < a.Count; ind ++)
+                            foreach (var t in a)
                             {
-                                if (!(a.Item[k].bitmask[i] == b.Item[k].bitmask[i] == q_hshakes[j, i] &&
-                                    a.item[k].toggle == b.item[k].toggle))
-                                {
-                                    result_ok = false;
-                                    break;
-                                }
+                                if (((Register)a[k]).getBitmask()[i] == ((Register)b[k]).getBitmask()[i] == q_hshakes[j, i] &&
+                                    ((Register)a[k]).getToggle() == ((Register)a[k]).getToggle()) continue;
+                                result_ok = false;
+                                break;
                             }
                             if (!result_ok)
                                 break;
@@ -46,24 +43,22 @@ namespace TheBoundedSingleWriterAlgorithm
 
                         if (result_ok)
                         {
-                            int[] view = new view[registers.Count];
-                            for (int i = 0; i < registers.Count; i++)
-                                view[i] = a.Item[i].data;
+                            var view = new int[registers.Count];
+                            for (var ii = 0; ii < registers.Count; ii++)
+                                view[ii] = ((Register) a[ii]).getData();
                             return view;
                         }
 
-                        for (int k = 0; k < a.Count; k++)
+                        for (var k = 0; k < a.Count; k++)
                         {
-                            for (int ind = 0; ind < a.Count; ind++)
+                            foreach (var t in a)
                             {
-                                if (a.Item[k].bitmask[i] != b.Item[k].bitmask[i] ||
-                                    b.Item[k].bitmask[i] != q_hshakes[j, i] ||
-                                    a.item[k].toggle != b.item[k].toggle)
-                                {
-                                    if (moved[k])
-                                        return b.Item[k].view;
-                                    moved[k] = true;
-                                }
+                                if (((Register)a[k]).getBitmask()[i] == ((Register)b[k]).getBitmask()[i] &&
+                                    ((Register)b[k]).getBitmask()[i] == q_hshakes[j, i] &&
+                                    ((Register)a[k]).getToggle() == ((Register)b[k]).getToggle()) continue;
+                                if (moved[k])
+                                    return ((Register)b[k]).getView();
+                                moved[k] = true;
                             }
                         }
                     }
@@ -72,16 +67,17 @@ namespace TheBoundedSingleWriterAlgorithm
 
         public void update(int i, int value)
         {
-            bool[] newBitmask = new bool[registers.Count];
-            for (int j = 0; j < registers.Count; j ++)
-                newBitmask[j] = !q[j, i];
-            int view = Scan();
-            (Register)this.registers[i].AtomicUpdate(value, newBitmask, !(Register)this.registers[i].toggle, view);
+            var newBitmask = new bool[registers.Count];
+            for (var j = 0; j < registers.Count; j ++)
+                newBitmask[j] = !q_hshakes[j, i];
+            var view = Scan();
+            ((Register)this.registers[i]).AtomicUpdate(value, newBitmask, 
+                                                        !((Register)this.registers[i]).getToggle(), view);
         }
 
-        private ArrayList<Register> CollectRegister()
+        private ArrayList CollectRegisters()
         {
-            return registers.Clone();
+            return (ArrayList) registers.Clone();
         }
     }
 

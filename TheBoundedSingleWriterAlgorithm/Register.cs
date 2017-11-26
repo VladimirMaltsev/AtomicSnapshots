@@ -1,24 +1,48 @@
 using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 
 namespace TheBoundedSingleWriterAlgorithm
 {
     internal class Register
     {
-        int data;
-        bool[] bitmask;
-        bool toggle;
-        int[] view;
+        private int data;
+        private bool[] bitmask;
+        private bool toggle;
+        private int[] view;
 
-        public Register() { }
+        public Register()
+        {
+        }
 
-        public Register(int data, int n) 
+        public Register(int data, int n)
         {
             this.data = data;
             bitmask = new bool[n];
             view = new int[n];
         }
 
-        public void AtomicUpdate(int newData, bool[] newBitmask, bool newToggle, int[] snapshot)
+        public bool[] getBitmask()
+        {
+            return bitmask;
+        }
+
+        public bool getToggle()
+        {
+            return toggle;
+        }
+
+        public int getData()
+        {
+            return data;
+        }
+
+        public int[] getView()
+        {
+            return view;
+        }
+
+    public void AtomicUpdate(int newData, bool[] newBitmask, bool newToggle, int[] snapshot)
         {
             Object updLock = new Object();
             lock (updLock)
