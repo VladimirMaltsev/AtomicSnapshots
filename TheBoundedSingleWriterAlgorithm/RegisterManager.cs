@@ -20,22 +20,17 @@ namespace TheBoundedSingleWriterAlgorithm
 
 		public int[] Scan(int ind = 0)
 		{
-			//Console.WriteLine("Scan >> Task #{0}", Task.CurrentId);
 			var moved = new bool[registers.Length];
 
 			while (true)
 			{
-				//Console.WriteLine("     >> While >> Task #{0}", Task.CurrentId);
-				for (var j = 0; j < registers.Length - 1; j++)
+				for (var j = 0; j < registers.Length; j++)
 				{
 					q_hshakes[ind, j] = registers[j].GetBitmask()[ind];
 				}
-
-
+				
 				var a = CollectRegisters();
 				var b = CollectRegisters();
-				//               printRegs(a);
-				//               printRegs(b);
 
 				var resultOk = true;
 				for (var k = 0; k < a.Length; k++)
@@ -55,25 +50,23 @@ namespace TheBoundedSingleWriterAlgorithm
 
 				if (!resultOk) continue;
 
-				//Console.WriteLine("Result ok");
 				var view = new int[registers.Length];
 				for (var ii = 0; ii < registers.Length; ii++)
 					view[ii] = a[ii].GetData();
-				//Console.WriteLine(view[0]);
 				return view;
 			}
 		}
 
 		public void Update(int i, int value)
 		{
-			//Console.WriteLine("Update >> Task #{0}", Task.CurrentId);
 			var newBitmask = new bool[registers.Length];
 			for (var j = 0; j < registers.Length; j++)
 				newBitmask[j] = !q_hshakes[j, i];
 			var view = Scan(i);
-			//printArr(view);
+			
 			registers[i].AtomicUpdate(value,
 				newBitmask, !registers[i].GetToggle(), view);
+			//Console.Write("\nWrite... Task #{0} >> arr = {{ {1} , {2} }}", Task.CurrentId, view[0], arr[1]);
 		}
 
 		private Register[] CollectRegisters()
@@ -81,23 +74,6 @@ namespace TheBoundedSingleWriterAlgorithm
 			return (Register[])registers.Clone();
 		}
 
-		private void printRegs(Register[] regs)
-		{
-			foreach (Register r in regs)
-			{
-				Console.Write("{0} ", r.GetData());
-			}
-			Console.WriteLine();
-		}
-
-		private static void printArr(int[] arr)
-		{
-			for (int i = 0; i < arr.Length; i++)
-			{
-				Console.Write("{0} ", arr[i]);
-			}
-			Console.WriteLine();
-		}
 	}
 
 

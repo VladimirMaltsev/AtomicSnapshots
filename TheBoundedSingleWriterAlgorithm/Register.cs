@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
+using System.Threading.Tasks;
 
 namespace TheBoundedSingleWriterAlgorithm
 {
@@ -9,13 +10,15 @@ namespace TheBoundedSingleWriterAlgorithm
 	{
 		static Object updLock = new Object();
 
+		private int id;
 		private int data;
 		private bool[] bitmask;
 		private bool toggle;
 		private int[] view;
 
-		public Register(int data, int n)
+		public Register(int data, int id, int n)
 		{
+			this.id = id;
 			this.data = data;
 			bitmask = new bool[n];
 			view = new int[n];
@@ -49,7 +52,10 @@ namespace TheBoundedSingleWriterAlgorithm
 				this.bitmask = newBitmask;
 				this.toggle = newToggle;
 				this.view = snapshot;
+				Console.WriteLine("Task #{0} updating his register #{1}", Task.CurrentId, id);
+				
 				this.data = newData;
+				Console.WriteLine("Task #{0} updated his register #{2} with data = {1}\n", Task.CurrentId, data, id);
 			}
 		}
 	}
