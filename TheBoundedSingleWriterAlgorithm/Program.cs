@@ -22,31 +22,46 @@ namespace TheBoundedSingleWriterAlgorithm
 			var tasks = new List<Task>();
 			var rm = new RegisterManager(registers);
 
-			for (var i = 0; i < countTask; i++)
+			Task.Run(() =>
 			{
-				if (i % 2 == 0)
+				for (int i = 2; i < 12; i += 2)
 				{
-					var i1 = i + 2;
-					Task.Run(() =>
-					{
-						Console.WriteLine("Task #{0} begins to Update() register #{1} with val = {2}...", 
-							Task.CurrentId, i1 / 4 % 2, i1);
-						rm.Update(i1 / 4 % 2, i1);
-					});
+					Console.WriteLine("Task #{0} begins to Update() register #{1} with val = {2}...",
+						Task.CurrentId, 0, i);
+					rm.Update(0, i);
+					Thread.Sleep(100);
 				}
-				else
+				
+			
+			});
+			
+			Task.Run(() =>
+			{
+				for (int i = 1; i < 12; i += 2)
+				{
+					Console.WriteLine("Task #{0} begins to Update() register #{1} with val = {2}...",
+						Task.CurrentId, 1, i);
+					rm.Update(1, i);
+					Thread.Sleep(100);
+				}
+				
+			
+			});
+			
+			
+			for (var i = 0; i < countTask; i++)
+			{	
 					tasks.Add(Task.Run(() =>
 					{
 						Console.WriteLine("Task #{0} begins to Scan()...", Task.CurrentId);
 						var arr = rm.Scan();
 						Console.WriteLine("Task #{0} Scaned :>> {{ {1} , {2} }}\n", Task.CurrentId, arr[0], arr[1]);
 					}));
+				Thread.Sleep(100);
 
 			}
 			Task.WaitAll(tasks.ToArray());
 			
-			
-			//Console.ReadKey();
 		}
 	}
 }

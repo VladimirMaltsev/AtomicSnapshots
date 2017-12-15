@@ -52,7 +52,7 @@ namespace TheBoundedSingleWriterAlgorithm
 				this.bitmask = newBitmask;
 				this.toggle = newToggle;
 				this.view = snapshot;
-				Console.WriteLine("Task #{0} updating his register #{1}", Task.CurrentId, id);
+				//Console.WriteLine("Task #{0} updating his register #{1}", Task.CurrentId, id);
 				
 				this.data = newData;
 				Console.WriteLine("Task #{0} updated his register #{2} with data = {1}\n", Task.CurrentId, data, id);
